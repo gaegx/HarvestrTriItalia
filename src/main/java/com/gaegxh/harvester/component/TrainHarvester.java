@@ -21,7 +21,6 @@ import static java.lang.Long.getLong;
 @Component
 public class TrainHarvester {
     private static final Logger logger = LoggerFactory.getLogger(TrainHarvester.class);
-    private final StationSelector stationSelector;
     private final TicketApiClient apiClient;
     private final SolutionParser solutionParser;
     private final CsvWriterService csvWriterService;
@@ -33,7 +32,6 @@ public class TrainHarvester {
     public TrainHarvester(StationSelector stationSelector, TicketApiClient apiClient,
                           SolutionParser solutionParser, CsvWriterService csvWriterService,
                           LastTrainChecker lastTrainChecker, TicketSearchRequestFactory requestFactory,BatchTicketHarvester batchTicketHarvester) {
-        this.stationSelector = stationSelector;
         this.apiClient = apiClient;
         this.solutionParser = solutionParser;
         this.csvWriterService = csvWriterService;
@@ -47,7 +45,7 @@ public class TrainHarvester {
         boolean batch = true;
 
         TicketSearchRequest initialRequest = requestFactory.createInitialRequest(
-                getLong(task.getDepartureStation()), getLong(task.getArrivalStation()),task.getDepartureDate());
+                Long.parseLong(task.getDepartureStation()), Long.parseLong(task.getArrivalStation()),task.getDepartureDate());
         String initialResponse = apiClient.fetchSolutions(initialRequest);
         List<TicketSolution> solutions = solutionParser.parseTickets(
                 initialResponse);
@@ -58,7 +56,7 @@ public class TrainHarvester {
             logger.info("Последний поезд отправляется до полуночи, выполняем повторный запрос");
             Optional<OffsetDateTime> lastDepartureTime = lastTrainChecker.getLastTrainDepartureTime(initialResponse);
             TicketSearchRequest nextRequest = requestFactory.createRequestWithTime(
-                    getLong(task.getDepartureStation()), getLong(task.getArrivalStation()),
+                    Long.parseLong(task.getDepartureStation()), Long.parseLong(task.getArrivalStation()),
                     lastDepartureTime.map(OffsetDateTime::toString).orElse(null));
             String nextResponse = apiClient.fetchSolutions(nextRequest);
             solutions.addAll(solutionParser.parseTickets(
@@ -72,7 +70,7 @@ public class TrainHarvester {
             logger.error("Все билеты проданы");
             System.out.println("Все билеты проданы");
         }
-        String filepath = "output/" + Long.getLong(task.getDepartureStation())+solutions.get(0).getDepartureTime() +".csv";
+        String filepath = "output/" + (task.getDepartureStation())+solutions.get(0).getDepartureTime() +".csv";
 
         if (batch) {
             List<TicketSolution> batchSolutions = batchTicketHarvester.executeBatchOperation(initialRequest,filepath);
