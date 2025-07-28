@@ -1,10 +1,8 @@
 package com.gaegxh.harvester.component;
 
-import com.gaegxh.harvester.model.AdvancedSearchRequest;
-import com.gaegxh.harvester.model.Criteria;
 import com.gaegxh.harvester.model.TicketSearchRequest;
-import com.gaegxh.harvester.service.ticket.InputReader;
-import com.gaegxh.harvester.service.ticket.InputValidator;
+import com.gaegxh.harvester.service.valid.InputReader;
+import com.gaegxh.harvester.service.valid.InputValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,30 +13,19 @@ public class TicketSearchRequestFactory {
     private static final int DEFAULT_LIMIT = 10;
     private final InputReader inputReader;
     private final InputValidator inputValidator;
-    private final CriteriaFactory criteriaFactory;
-    private final AdvancedSearchRequestFactory advancedSearchRequestFactory;
+
 
     public TicketSearchRequestFactory(
             InputReader inputReader,
-            InputValidator inputValidator,
-            CriteriaFactory criteriaFactory,
-            AdvancedSearchRequestFactory advancedSearchRequestFactory) {
+            InputValidator inputValidator) {
         this.inputReader = inputReader;
         this.inputValidator = inputValidator;
-        this.criteriaFactory = criteriaFactory;
-        this.advancedSearchRequestFactory = advancedSearchRequestFactory;
     }
 
-    public TicketSearchRequest createInitialRequest(long departureStationId, long arrivalStationId) {
+    public TicketSearchRequest createInitialRequest(long departureStationId, long arrivalStationId,String date) {
         logger.info("Создание начального запроса");
-        String date = inputValidator.validateDepartureDate(
-                inputReader.readString("Введите дату отправления (yyyy-MM-dd, например, 2025-07-25): ")
-        );
-        String time = inputValidator.validateDepartureTime(
-                date,
-                inputReader.readString("Введите время отправления (HH:mm, например, 15:00): ")
-        );
-        return createRequest(departureStationId, arrivalStationId, time, DEFAULT_LIMIT);
+
+        return createRequest(departureStationId, arrivalStationId, date, DEFAULT_LIMIT);
     }
 
     public TicketSearchRequest createRequestWithTime(long departureStationId, long arrivalStationId, String departureTime) {
@@ -48,10 +35,8 @@ public class TicketSearchRequestFactory {
 
 
     private TicketSearchRequest createRequest(long departureStationId, long arrivalStationId, String departureTime, int limit) {
-        int adults = inputReader.readInt("Введите количество взрослых: ", 1, 10);
-        int children = inputReader.readInt("Введите количество детей: ", 0, 10);
-        Criteria criteria = criteriaFactory.createCriteria(limit);
-        AdvancedSearchRequest advancedSearchRequest = advancedSearchRequestFactory.createAdvancedSearchRequest();
+        int adults =1;
+        int children = 0;
 
         return TicketSearchRequest.builder()
                 .departureLocationId(departureStationId)
@@ -59,8 +44,6 @@ public class TicketSearchRequestFactory {
                 .departureTime(departureTime)
                 .adults(adults)
                 .children(children)
-                .criteria(criteria)
-                .advancedSearchRequest(advancedSearchRequest)
                 .build();
     }
 }

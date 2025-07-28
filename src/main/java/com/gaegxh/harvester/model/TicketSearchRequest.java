@@ -14,6 +14,4 @@ public class TicketSearchRequest {
     private String departureTime;
     private int adults;
     private int children;
-    private Criteria criteria;
-    private AdvancedSearchRequest advancedSearchRequest;
 }

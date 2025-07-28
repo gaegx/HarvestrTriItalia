@@ -4,7 +4,7 @@ package com.gaegxh.harvester.component;
 
 import com.gaegxh.harvester.model.Station;
 
-import com.gaegxh.harvester.service.search.StationSearchService;
+import com.gaegxh.harvester.service.search.Impl.StationSearchService;
 import org.springframework.stereotype.Component;
 import java.util.Scanner;
 

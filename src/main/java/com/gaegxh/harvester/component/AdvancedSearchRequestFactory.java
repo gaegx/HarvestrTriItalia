@@ -1,7 +1,7 @@
 package com.gaegxh.harvester.component;
 
 import com.gaegxh.harvester.model.AdvancedSearchRequest;
-import com.gaegxh.harvester.service.ticket.InputReader;
+import com.gaegxh.harvester.service.valid.InputReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

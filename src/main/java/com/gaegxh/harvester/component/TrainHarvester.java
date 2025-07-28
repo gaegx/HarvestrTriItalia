@@ -1,6 +1,7 @@
 package com.gaegxh.harvester.component;
 
 import com.gaegxh.harvester.model.Station;
+import com.gaegxh.harvester.model.Task;
 import com.gaegxh.harvester.model.TicketSearchRequest;
 import com.gaegxh.harvester.model.TicketSolution;
 import com.gaegxh.harvester.service.export.Impl.CsvWriterService;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+
+import static java.lang.Long.getLong;
 
 @Component
 public class TrainHarvester {
@@ -40,27 +43,11 @@ public class TrainHarvester {
 
     }
 
-    public void harvestSolutions() throws Exception {
+    public void harvestSolutions(Task task) throws Exception {
         boolean batch = true;
 
-        Station departureStation = stationSelector.selectStationByName("Введите название станции ОТПРАВЛЕНИЯ: ");
-        if (departureStation == null) {
-            logger.error("Не удалось выбрать станцию отправления");
-            throw new IllegalStateException("Станция отправления не выбрана");
-        }
-        Station arrivalStation = stationSelector.selectStationByName("Введите название станции ПРИБЫТИЯ: ");
-        if (arrivalStation == null) {
-            logger.error("Не удалось выбрать станцию прибытия");
-            throw new IllegalStateException("Станция прибытия не выбрана");
-        }
-
-        logger.info("Выбраны станции: {} (ID: {}) -> {} (ID: {})",
-                departureStation.getDisplayName(), departureStation.getId(),
-                arrivalStation.getDisplayName(), arrivalStation.getId());
-
-
         TicketSearchRequest initialRequest = requestFactory.createInitialRequest(
-                departureStation.getId(), arrivalStation.getId());
+                getLong(task.getDepartureStation()), getLong(task.getArrivalStation()),task.getDepartureDate());
         String initialResponse = apiClient.fetchSolutions(initialRequest);
         List<TicketSolution> solutions = solutionParser.parseTickets(
                 initialResponse);
@@ -71,7 +58,7 @@ public class TrainHarvester {
             logger.info("Последний поезд отправляется до полуночи, выполняем повторный запрос");
             Optional<OffsetDateTime> lastDepartureTime = lastTrainChecker.getLastTrainDepartureTime(initialResponse);
             TicketSearchRequest nextRequest = requestFactory.createRequestWithTime(
-                    departureStation.getId(), arrivalStation.getId(),
+                    getLong(task.getDepartureStation()), getLong(task.getArrivalStation()),
                     lastDepartureTime.map(OffsetDateTime::toString).orElse(null));
             String nextResponse = apiClient.fetchSolutions(nextRequest);
             solutions.addAll(solutionParser.parseTickets(
@@ -85,7 +72,7 @@ public class TrainHarvester {
             logger.error("Все билеты проданы");
             System.out.println("Все билеты проданы");
         }
-        String filepath = "output/" + departureStation.getDisplayName() +solutions.get(0).getDepartureTime() +".csv";
+        String filepath = "output/" + Long.getLong(task.getDepartureStation())+solutions.get(0).getDepartureTime() +".csv";
 
         if (batch) {
             List<TicketSolution> batchSolutions = batchTicketHarvester.executeBatchOperation(initialRequest,filepath);

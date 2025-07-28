@@ -1,4 +1,4 @@
-package com.gaegxh.harvester.service.ticket;
+package com.gaegxh.harvester.service.valid;
 
 public interface InputReader {
     String readString(String prompt);

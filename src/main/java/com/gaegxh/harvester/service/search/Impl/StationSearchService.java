@@ -1,4 +1,4 @@
-package com.gaegxh.harvester.service.search;
+package com.gaegxh.harvester.service.search.Impl;
 
 import com.gaegxh.harvester.model.Station;
 import com.google.gson.Gson;

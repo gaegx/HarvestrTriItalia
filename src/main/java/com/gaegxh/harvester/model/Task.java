@@ -1,45 +1,52 @@
 package com.gaegxh.harvester.model;
 
-import com.google.gson.annotations.SerializedName;
+import jakarta.persistence.*;
 import lombok.*;
 
-@AllArgsConstructor
+@Entity
+@Table(name = "task") // Название таблицы в БД (можно изменить при необходимости)
+@Getter
+@Setter
 @NoArgsConstructor
-@Data
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class Task {
-    @SerializedName("task_uuid")
+
+    @Id
+    @Column(name = "task_uuid", nullable = false, unique = true)
     private String taskUuid;
 
-    @SerializedName("crawler_type")
+    @Column(name = "crawler_type")
     private String crawlerType;
 
-    @SerializedName("departure_station")
+    @Column(name = "departure_station")
     private String departureStation;
 
-    @SerializedName("arrival_station")
+    @Column(name = "arrival_station")
     private String arrivalStation;
 
-    @SerializedName("coach_classes")
+    @Column(name = "coach_classes")
     private String coachClasses;
 
-    @SerializedName("train_brands")
+    @Column(name = "train_brands")
     private String trainBrands;
 
-    @SerializedName("fare_codes")
+    @Column(name = "fare_codes")
     private String fareCodes;
 
-    @SerializedName("departure_date")
+    @Column(name = "departure_date")
     private String departureDate;
 
-    @SerializedName("reverse")
+    @Column(name = "reverse")
     private int reverse;
 
-    @SerializedName("maximum_changes")
+    @Column(name = "maximum_changes")
     private int changes;
 
-    @SerializedName("dep_station_uuid")
+    @Column(name = "dep_station_uuid")
     private String departureStationUuid;
 
-    @SerializedName("arr_station_uuid")
+    @Column(name = "arr_station_uuid")
     private String arrivalStationUuid;
 }

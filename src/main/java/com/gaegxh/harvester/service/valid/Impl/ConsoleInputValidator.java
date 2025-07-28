@@ -1,6 +1,6 @@
-package com.gaegxh.harvester.service.ticket.Impl;
+package com.gaegxh.harvester.service.valid.Impl;
 
-import com.gaegxh.harvester.service.ticket.InputValidator;
+import com.gaegxh.harvester.service.valid.InputValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;

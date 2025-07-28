@@ -75,8 +75,6 @@ public class BatchTicketHarvester {
                         .departureTime(lastDepartureTime)
                         .adults(initialRequest.getAdults())
                         .children(initialRequest.getChildren())
-                        .criteria(initialRequest.getCriteria())
-                        .advancedSearchRequest(initialRequest.getAdvancedSearchRequest())
                         .build();
             } else {
                 logger.info("Последний поезд после полуночи. Завершаем.");
@@ -152,8 +150,6 @@ public class BatchTicketHarvester {
                 .departureTime(initialRequest.getDepartureTime())
                 .adults(initialRequest.getAdults())
                 .children(initialRequest.getChildren())
-                .criteria(initialRequest.getCriteria())
-                .advancedSearchRequest(initialRequest.getAdvancedSearchRequest())
                 .build();
     }
 }
