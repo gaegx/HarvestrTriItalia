@@ -11,16 +11,10 @@ import org.springframework.stereotype.Component;
 public class TicketSearchRequestFactory {
     private static final Logger logger = LoggerFactory.getLogger(TicketSearchRequestFactory.class);
     private static final int DEFAULT_LIMIT = 10;
-    private final InputReader inputReader;
-    private final InputValidator inputValidator;
 
 
-    public TicketSearchRequestFactory(
-            InputReader inputReader,
-            InputValidator inputValidator) {
-        this.inputReader = inputReader;
-        this.inputValidator = inputValidator;
-    }
+
+
 
     public TicketSearchRequest createInitialRequest(long departureStationId, long arrivalStationId,String date) {
         logger.info("Создание начального запроса");

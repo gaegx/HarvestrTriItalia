@@ -4,6 +4,7 @@ import com.gaegxh.harvester.model.Station;
 import com.gaegxh.harvester.model.Task;
 import com.gaegxh.harvester.model.TicketSearchRequest;
 import com.gaegxh.harvester.model.TicketSolution;
+import com.gaegxh.harvester.repository.TicketSolutionRepository;
 import com.gaegxh.harvester.service.export.Impl.CsvWriterService;
 import com.gaegxh.harvester.service.parse.Impl.SolutionParser;
 import org.slf4j.Logger;
@@ -27,18 +28,20 @@ public class TrainHarvester {
     private final LastTrainChecker lastTrainChecker;
     private final TicketSearchRequestFactory requestFactory;
     private final BatchTicketHarvester batchTicketHarvester;
+    private final TicketSolutionRepository ticketSolutionRepository;
 
 
-    public TrainHarvester(StationSelector stationSelector, TicketApiClient apiClient,
+    public TrainHarvester(TicketApiClient apiClient,
                           SolutionParser solutionParser, CsvWriterService csvWriterService,
-                          LastTrainChecker lastTrainChecker, TicketSearchRequestFactory requestFactory,BatchTicketHarvester batchTicketHarvester) {
+                          LastTrainChecker lastTrainChecker, TicketSearchRequestFactory requestFactory, BatchTicketHarvester batchTicketHarvester,
+                          TicketSolutionRepository ticketSolutionRepository, TicketSolutionRepository ticketSolutionRepository1) {
         this.apiClient = apiClient;
         this.solutionParser = solutionParser;
         this.csvWriterService = csvWriterService;
         this.lastTrainChecker = lastTrainChecker;
         this.requestFactory = requestFactory;
         this.batchTicketHarvester = batchTicketHarvester;
-
+        this.ticketSolutionRepository = ticketSolutionRepository1;
     }
 
     public void harvestSolutions(Task task) throws Exception {
@@ -79,6 +82,7 @@ public class TrainHarvester {
         }
 
         csvWriterService.writeTicketsToCsv(solutions, filepath);
+        ticketSolutionRepository.saveAll(solutions);
         logger.info("Итоговое количество решений: {}", solutions.size());
     }
 }

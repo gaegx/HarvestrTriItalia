@@ -1,10 +1,15 @@
 package com.gaegxh.harvester.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "task") // Название таблицы в БД (можно изменить при необходимости)
+@Table(name = "task")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,4 +54,25 @@ public class Task {
 
     @Column(name = "arr_station_uuid")
     private String arrivalStationUuid;
+
+    @Column(name = "region_code")
+    private String regionCode;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "priority")
+    private int priority;
+
+    @Column(name = "result")
+    private String result;
+
+    @Column(name = "last_updated")
+    private LocalDateTime lastUpdated;
+
+    @Column(name = "retry_count")
+    private int retryCount;
 }

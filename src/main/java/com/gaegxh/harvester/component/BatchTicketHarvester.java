@@ -32,8 +32,8 @@ public class BatchTicketHarvester {
         this.gson = new Gson();
     }
 
-    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath) throws Exception {
-        logger.info("Начало батч-операции с пошаговым перебором до полуночи");
+    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath)  {
+        logger.info("Начало Батч-операции с пошаговым перебором до полуночи");
 
         String solutionsResponse = apiClient.fetchSolutions(initialRequest);
         List<TicketSolution> allSolutions = new ArrayList<>(solutionParser.parseTickets(solutionsResponse));
@@ -124,7 +124,7 @@ public class BatchTicketHarvester {
             }
 
             JsonArray solutionsArray = responseJson.getAsJsonArray("solutions");
-            if (solutionsArray.size() == 0) {
+            if (solutionsArray.isEmpty()) {
                 return null;
             }
 
