@@ -32,7 +32,7 @@ public class BatchTicketHarvester {
         this.gson = new Gson();
     }
 
-    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath) throws Exception {
+    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath) {
         logger.info("Начало батч-операции с пошаговым перебором до полуночи");
 
         String solutionsResponse = apiClient.fetchSolutions(initialRequest);

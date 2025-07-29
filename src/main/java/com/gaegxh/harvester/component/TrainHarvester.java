@@ -40,7 +40,7 @@ public class TrainHarvester {
 
     }
 
-    public void harvestSolutions() throws Exception {
+    public void harvestSolutions() {
         boolean batch = true;
 
         Station departureStation = stationSelector.selectStationByName("Введите название станции ОТПРАВЛЕНИЯ: ");

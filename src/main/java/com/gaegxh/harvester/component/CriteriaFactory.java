@@ -20,21 +20,11 @@ public class CriteriaFactory {
 
     public Criteria createCriteria(int limit) {
         logger.info("Создание объекта Criteria с вводом пользователя");
-        boolean frecceOnly = inputReader.readBoolean("Только поезда Frecce? (по умолчанию: нет)");
-        boolean regionalOnly = inputReader.readBoolean("Только региональные поезда? (по умолчанию: нет)");
-        boolean intercityOnly = inputReader.readBoolean("Только поезда Intercity? (по умолчанию: нет)");
-        boolean tourismOnly = inputReader.readBoolean("Только туристические поезда? (по умолчанию: нет)");
-        boolean noChanges = inputReader.readBoolean("Без пересадок? (по умолчанию: нет)");
         String order = inputValidator.validateOrder(
                 inputReader.readString("Введите порядок сортировки (DEPARTURE_DATE, PRICE, DURATION, по умолчанию: DEPARTURE_DATE): ")
         );
 
         return Criteria.builder()
-                .frecceOnly(frecceOnly)
-                .regionalOnly(regionalOnly)
-                .intercityOnly(intercityOnly)
-                .tourismOnly(tourismOnly)
-                .noChanges(noChanges)
                 .order(order)
                 .offset(0)
                 .limit(limit)
