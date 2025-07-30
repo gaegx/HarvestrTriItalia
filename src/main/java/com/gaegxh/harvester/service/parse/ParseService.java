@@ -6,5 +6,5 @@ import com.gaegxh.harvester.model.TicketSolution;
 import java.util.List;
 
 public interface ParseService {
-    public List<TicketSolution> parseTickets(String jsonResponse, Task task);
+    List<TicketSolution> parseTickets(String jsonResponse, Task task);
 }

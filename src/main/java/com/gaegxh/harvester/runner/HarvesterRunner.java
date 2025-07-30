@@ -9,10 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+
+import java.util.concurrent.*;
 
 @Component
 public class HarvesterRunner implements CommandLineRunner {
@@ -31,31 +29,43 @@ public class HarvesterRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Optional<Task> taskOptional = taskRepository.fetchTask("trenitalia", null);
-
-        if (taskOptional.isEmpty()) {
-            log.warn("Задача не найдена.");
-            return;
-        }
-
-        Task task = taskOptional.get();
-        log.info("Основная задача: {} -> {}", task.getDepartureStation(), task.getArrivalStation());
-
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        taskRepository.fetchTask("trenitalia", null)
+                .ifPresentOrElse(
+                        task -> {
+                            log.info("Основная задача: {} -> {}", task.getDepartureStation(), task.getArrivalStation());
 
 
-        Future<?> mainTaskFuture = executor.submit(() -> {
+                            CompletableFuture<Void> mainFuture = CompletableFuture.runAsync(() -> safeHarvest(task));
+
+
+                            CompletableFuture<Void> reversedFuture = (task.getReverse() == 1)
+                                    ? CompletableFuture.runAsync(() -> {
+                                Task reversed = trainInverser.getInversedTask(task);
+                                log.info("Обратная задача: {} -> {}", reversed.getDepartureStation(), reversed.getArrivalStation());
+                                safeHarvest(reversed);
+                            })
+                                    : CompletableFuture.completedFuture(null);
+
+
+                            CompletableFuture<Void> combined = CompletableFuture.allOf(mainFuture, reversedFuture);
+
+
+                            combined.exceptionally(ex -> {
+                                log.error("Ошибка в процессе выполнения задач", ex);
+                                return null;
+                            }).join();
+                        },
+                        () -> log.warn("Задача не найдена.")
+                );
+    }
+
+    private void safeHarvest(Task task) {
+        try {
             trainHarvester.harvestSolutions(task);
-        });
-
-        if (task.getReverse()==1) {
-            executor.submit(() -> {
-                Task reversed = trainInverser.getInversedTask(task);
-                log.info("Обратная задача: {} -> {}", reversed.getDepartureStation(), reversed.getArrivalStation());
-                trainHarvester.harvestSolutions(reversed);
-            });
+        } catch (Exception e) {
+            log.error("Ошибка при обработке задачи: {} -> {}", task.getDepartureStation(), task.getArrivalStation(), e);
         }
-
-        executor.shutdown();
     }
 }
+
+

@@ -63,7 +63,6 @@ public class TrainHarvester {
 
         String filepath = "output/" + task.getDepartureStation() + "_" + task.getDepartureDate() + ".csv";
 
-
         if (lastTrainChecker.isLastTrainBeforeMidnight(initialResponse)) {
             logger.info("Последний поезд до полуночи — запускаем батч-операцию со смещением");
 

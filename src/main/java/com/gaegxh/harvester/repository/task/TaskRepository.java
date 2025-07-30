@@ -17,8 +17,10 @@ public class TaskRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    private final Gson gson = new Gson();
+    private final Gson gson;
+    public TaskRepository(Gson gson) {
+        this.gson = gson;
+    }
 
     @Transactional
     public Optional<Task> fetchTask(String crawlerType, Integer harvesterServerId) {

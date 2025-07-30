@@ -15,7 +15,6 @@ public class SearchServiceImpl implements SearchService {
     private String baseUrl;
 
 
-
     @Override
     public String searchTickets(TicketSearchRequest request) {
         try {
