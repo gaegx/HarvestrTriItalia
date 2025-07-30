@@ -1,12 +1,18 @@
 package com.gaegxh.harvester.model;
 
 import com.google.gson.annotations.SerializedName;
+
 import lombok.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
+import java.time.LocalDateTime;
+
+
+
+@Getter
+@Setter
+@ToString
 public class Task {
+
     @SerializedName("task_uuid")
     private String taskUuid;
 
@@ -41,5 +47,12 @@ public class Task {
     private String departureStationUuid;
 
     @SerializedName("arr_station_uuid")
+
     private String arrivalStationUuid;
+
+    private String regionCode;
+    private String status;
+    private int priority;
+    private String result;
+    private int retryCount;
 }

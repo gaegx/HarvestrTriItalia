@@ -15,5 +15,4 @@ public class TicketSearchRequest {
     private int adults;
     private int children;
     private Criteria criteria;
-    private AdvancedSearchRequest advancedSearchRequest;
 }

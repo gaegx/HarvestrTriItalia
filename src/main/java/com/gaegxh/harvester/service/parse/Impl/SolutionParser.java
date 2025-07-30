@@ -1,195 +1,219 @@
 package com.gaegxh.harvester.service.parse.Impl;
 
 import com.gaegxh.harvester.model.TicketSolution;
+import com.gaegxh.harvester.model.Task;
+import com.gaegxh.harvester.service.filter.SolutionFilter;
+import com.gaegxh.harvester.service.parse.ParseService;
 import com.google.gson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
 @Service
-public class SolutionParser {
+public class SolutionParser implements ParseService {
 
     private static final Logger log = LoggerFactory.getLogger(SolutionParser.class);
 
-    public static List<TicketSolution> parseTickets(String jsonResponse) {
-        log.info("Начинается парсинг JSON-ответа");
-        List<TicketSolution> result = new ArrayList<>();
+    private final List<SolutionFilter> filters;
 
-        JsonObject root = safeObject(JsonParser.parseString(jsonResponse));
-        JsonArray solutions = safeArray(root, "solutions");
-        if (solutions == null) {
-            log.warn("В JSON отсутствует массив 'solutions'");
-            return result;
+    @Autowired
+    public SolutionParser(List<SolutionFilter> filters) {
+        this.filters = filters != null ? filters : Collections.emptyList();
+    }
+
+    public List<TicketSolution> parseTickets(String jsonResponse, Task task) {
+        log.info("Начинается парсинг JSON-ответа");
+        List<TicketSolution> tickets = new ArrayList<>();
+
+        JsonObject root = asJsonObject(JsonParser.parseString(jsonResponse));
+        if (root == null) {
+            log.warn("Корневой JSON не является объектом");
+            return tickets;
         }
 
+        JsonArray solutions = getJsonArray(root, "solutions");
+        if (solutions == null || solutions.isEmpty()) {
+            throw new NoSuchElementException("Массив 'solutions' отсутствует или пуст");
+        }
         log.info("Количество решений для парсинга: {}", solutions.size());
 
         for (int i = 0; i < solutions.size(); i++) {
-            JsonElement solutionElement = solutions.get(i);
-            JsonObject solutionObj = safeObject(solutionElement);
-            if (solutionObj == null) {
+            JsonObject solutionWrapper = asJsonObject(solutions.get(i));
+            if (solutionWrapper == null) {
                 log.warn("Пропущен элемент solutions[{}], т.к. он не объект", i);
                 continue;
             }
 
-            JsonObject sol = safeObject(solutionObj, "solution");
-            if (sol == null) {
+            JsonObject solution = getJsonObject(solutionWrapper, "solution");
+            if (solution == null) {
                 log.warn("solutions[{}] не содержит объект 'solution'", i);
                 continue;
             }
 
-            String date = safeSubstring(getAsString(sol, "departureTime"), 0, 10);
-            String departure = getAsString(sol, "origin");
-            String arrival = getAsString(sol, "destination");
-            String departureTime = safeSubstring(getAsString(sol, "departureTime"), 11, 16);
-            String duration = getAsString(sol, "duration");
-
-            log.debug("Решение [{}]: {} → {}, дата {}, время отправления {}, длительность {}",
-                    i, departure, arrival, date, departureTime, duration);
-
-            JsonArray trains = safeArray(sol, "trains");
-            List<String> trainNumbers = new ArrayList<>();
-            List<String> brands = new ArrayList<>();
-            List<String> categories = new ArrayList<>();
-            if (trains != null) {
-                for (JsonElement train : trains) {
-                    JsonObject trainObj = safeObject(train);
-                    if (trainObj == null) continue;
-                    trainNumbers.add(getAsString(trainObj, "name"));
-                    brands.add(getAsString(trainObj, "denomination"));
-                    categories.add(getAsString(trainObj, "trainCategory"));
+            List<TicketSolution> parsedSolutions = parseSingleSolution(solutionWrapper, solution, i);
+            for (TicketSolution ticket : parsedSolutions) {
+                if (passesFilters(ticket, task)) {
+                    tickets.add(ticket);
+                } else {
+                    log.debug("Билет отфильтрован: {}", ticket);
                 }
-                log.debug("trains: {}", trainNumbers);
-            } else {
-                log.debug("В решении [{}] отсутствует массив 'trains'", i);
-            }
-
-            String trainNumber = String.join("|", trainNumbers);
-            String trainBrand = String.join("|", brands);
-            String trainClass = String.join("|", categories);
-
-            JsonArray nodes = safeArray(sol, "nodes");
-            Set<String> changeStations = new LinkedHashSet<>();
-            if (nodes != null) {
-                for (int j = 1; j < nodes.size(); j++) {
-                    JsonObject node = safeObject(nodes.get(j));
-                    if (node != null) {
-                        changeStations.add(getAsString(node, "origin"));
-                    }
-                }
-                log.debug("Промежуточные станции (changeStations): {}", changeStations);
-            } else {
-                log.debug("В решении [{}] отсутствует массив 'nodes'", i);
-            }
-            String changeStation = changeStations.isEmpty() ? "NULL" : String.join("|", changeStations);
-
-            JsonObject priceObj = safeObject(sol, "price");
-            String price = getAsString(priceObj, "amount");
-            String currency = getAsString(priceObj, "currency");
-
-            JsonArray grids = safeArray(solutionObj, "grids");
-            Set<TicketSolution> classTickets = new LinkedHashSet<>();
-
-            if (grids != null) {
-                for (JsonElement gridElement : grids) {
-                    JsonObject grid = safeObject(gridElement);
-                    if (grid == null) continue;
-
-                    JsonArray services = safeArray(grid, "services");
-                    if (services == null) continue;
-
-                    for (JsonElement serviceElement : services) {
-                        JsonObject service = safeObject(serviceElement);
-                        if (service == null) continue;
-
-                        String coachClass = getAsString(service, "groupName");
-
-                        JsonArray offers = safeArray(service, "offers");
-                        if (offers == null || offers.isEmpty()) continue;
-
-                        for (JsonElement offerElement : offers) {
-                            JsonObject offer = safeObject(offerElement);
-                            if (offer == null) continue;
-
-                            String status = getAsString(offer, "status");
-                            if (status == null || !"SALEABLE".equalsIgnoreCase(status)) {
-                                continue;
-                            }
-
-                            String fare = getAsString(offer, "name");
-                            JsonObject offerPrice = safeObject(offer, "price");
-                            String offerAmount = getAsString(offerPrice, "amount");
-                            String offerCurrency = getAsString(offerPrice, "currency");
-
-                            TicketSolution ticket = new TicketSolution(
-                                    date,
-                                    departure,
-                                    arrival,
-                                    safe(coachClass),
-                                    safe(trainBrand),
-                                    safe(trainClass),
-                                    safe(trainNumber),
-                                    safe(departureTime),
-                                    safe(duration),
-                                    safe(offerAmount),
-                                    safe(offerCurrency),
-                                    safe(fare),
-                                    safe(changeStation)
-                            );
-                            classTickets.add(ticket);
-                        }
-                    }
-                }
-            } else {
-                log.debug("В решении [{}] отсутствует массив 'grids'", i);
-            }
-
-            if (classTickets.isEmpty()) {
-                TicketSolution fallback = new TicketSolution(date, departure, arrival);
-                fallback.setTrainBrand(safe(trainBrand));
-                fallback.setTrainClass(safe(trainClass));
-                fallback.setTrainNumber(safe(trainNumber));
-                fallback.setDepartureTime(safe(departureTime));
-                fallback.setDuration(safe(duration));
-                fallback.setPrice(safe(price));
-                fallback.setCurrency(safe(currency));
-                fallback.setChangeStation(safe(changeStation));
-                result.add(fallback);
-                log.debug("Добавлен fallback билет для решения [{}]", i);
-            } else {
-                result.addAll(classTickets);
-                log.debug("Добавлено билетов с классами: {}", classTickets.size());
             }
         }
 
-        log.info("Парсинг завершён, всего найдено билетов: {}", result.size());
-        return result;
+        log.info("Парсинг завершён, всего найдено билетов после фильтрации: {}", tickets.size());
+        return tickets;
     }
 
+    private boolean passesFilters(TicketSolution ticket, Task task) {
+        for (SolutionFilter filter : filters) {
+            if (!filter.filter(ticket, task)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private static List<TicketSolution> parseSingleSolution(JsonObject solutionWrapper, JsonObject solution, int index) {
+        List<TicketSolution> tickets = new ArrayList<>();
 
-    private static String getAsString(JsonObject obj, String key) {
+        String date = substringSafe(getString(solution, "departureTime"), 0, 10);
+        String departure = getString(solution, "origin");
+        String arrival = getString(solution, "destination");
+        String departureTime = substringSafe(getString(solution, "departureTime"), 11, 16);
+        String duration = getString(solution, "duration");
+
+        log.debug("Решение [{}]: {} → {}, дата {}, время отправления {}, длительность {}",
+                index, departure, arrival, date, departureTime, duration);
+
+        List<String> trainNumbers = new ArrayList<>();
+        List<String> brands = new ArrayList<>();
+        List<String> categories = new ArrayList<>();
+
+        JsonArray trains = getJsonArray(solution, "trains");
+        if (trains != null) {
+            for (JsonElement trainEl : trains) {
+                JsonObject train = asJsonObject(trainEl);
+                if (train == null) continue;
+                trainNumbers.add(getString(train, "name"));
+                brands.add(getString(train, "denomination"));
+                categories.add(getString(train, "trainCategory"));
+            }
+            log.debug("trains: {}", trainNumbers);
+        } else {
+            log.debug("В решении [{}] отсутствует массив 'trains'", index);
+        }
+
+        String trainNumber = String.join("|", trainNumbers);
+        String trainBrand = String.join("|", brands);
+        String trainClass = String.join("|", categories);
+
+        JsonArray nodes = getJsonArray(solution, "nodes");
+        Set<String> changeStations = new LinkedHashSet<>();
+        if (nodes != null) {
+            for (int j = 1; j < nodes.size(); j++) { // пропускаем первый узел
+                JsonObject node = asJsonObject(nodes.get(j));
+                if (node != null) {
+                    changeStations.add(getString(node, "origin"));
+                }
+            }
+            log.debug("Промежуточные станции (changeStations): {}", changeStations);
+        } else {
+            log.debug("В решении [{}] отсутствует массив 'nodes'", index);
+        }
+        String changeStation = changeStations.isEmpty() ? "NULL" : String.join("|", changeStations);
+
+        JsonObject price = getJsonObject(solution, "price");
+        String priceAmount = getString(price, "amount");
+        String priceCurrency = getString(price, "currency");
+
+        JsonArray grids = getJsonArray(solutionWrapper, "grids");
+        Set<TicketSolution> classTickets = new LinkedHashSet<>();
+
+        if (grids != null) {
+            for (JsonElement gridEl : grids) {
+                JsonObject grid = asJsonObject(gridEl);
+                if (grid == null) continue;
+
+                JsonArray services = getJsonArray(grid, "services");
+                if (services == null) continue;
+
+                for (JsonElement serviceEl : services) {
+                    JsonObject service = asJsonObject(serviceEl);
+                    if (service == null) continue;
+
+                    String coachClass = getString(service, "groupName");
+                    JsonArray offers = getJsonArray(service, "offers");
+                    if (offers == null) continue;
+
+                    for (JsonElement offerEl : offers) {
+                        JsonObject offer = asJsonObject(offerEl);
+                        if (offer == null) continue;
+
+                        if (!"SALEABLE".equalsIgnoreCase(getString(offer, "status"))) {
+                            continue;
+                        }
+
+                        String fare = getString(offer, "name");
+                        JsonObject offerPrice = getJsonObject(offer, "price");
+                        String offerAmount = getString(offerPrice, "amount");
+                        String offerCurrency = getString(offerPrice, "currency");
+
+                        TicketSolution ticket = new TicketSolution(
+                                date, departure, arrival,
+                                safe(coachClass), safe(trainBrand), safe(trainClass), safe(trainNumber),
+                                safe(departureTime), safe(duration), safe(offerAmount), safe(offerCurrency),
+                                safe(fare), safe(changeStation)
+                        );
+                        classTickets.add(ticket);
+                    }
+                }
+            }
+        } else {
+            log.debug("В решении [{}] отсутствует массив 'grids'", index);
+        }
+
+        if (classTickets.isEmpty()) {
+            TicketSolution fallback = new TicketSolution(date, departure, arrival);
+            fallback.setTrainBrand(safe(trainBrand));
+            fallback.setTrainClass(safe(trainClass));
+            fallback.setTrainNumber(safe(trainNumber));
+            fallback.setDepartureTime(safe(departureTime));
+            fallback.setDuration(safe(duration));
+            fallback.setPrice(safe(priceAmount));
+            fallback.setCurrency(safe(priceCurrency));
+            fallback.setChangeStation(safe(changeStation));
+            tickets.add(fallback);
+            log.debug("Добавлен fallback билет для решения [{}]", index);
+        } else {
+            tickets.addAll(classTickets);
+            log.debug("Добавлено билетов с классами: {}", classTickets.size());
+        }
+
+        return tickets;
+    }
+
+    private static String getString(JsonObject obj, String key) {
         if (obj != null && obj.has(key) && !obj.get(key).isJsonNull()) {
             return obj.get(key).getAsString();
         }
         return null;
     }
 
-    private static JsonObject safeObject(JsonElement el) {
+    private static JsonObject asJsonObject(JsonElement el) {
         return (el != null && el.isJsonObject()) ? el.getAsJsonObject() : null;
     }
 
-    private static JsonObject safeObject(JsonObject parent, String key) {
+    private static JsonObject getJsonObject(JsonObject parent, String key) {
         if (parent != null && parent.has(key)) {
-            JsonElement el = parent.get(key);
-            return safeObject(el);
+            return asJsonObject(parent.get(key));
         }
         return null;
     }
 
-    private static JsonArray safeArray(JsonObject obj, String key) {
+    private static JsonArray getJsonArray(JsonObject obj, String key) {
         if (obj != null && obj.has(key)) {
             JsonElement el = obj.get(key);
             if (el != null && el.isJsonArray()) {
@@ -203,7 +227,7 @@ public class SolutionParser {
         return str == null ? "NULL" : str;
     }
 
-    private static String safeSubstring(String str, int start, int end) {
+    private static String substringSafe(String str, int start, int end) {
         if (str != null && str.length() >= end) {
             return str.substring(start, end);
         }

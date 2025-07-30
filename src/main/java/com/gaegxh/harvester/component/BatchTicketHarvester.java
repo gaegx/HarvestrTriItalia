@@ -1,5 +1,6 @@
 package com.gaegxh.harvester.component;
 
+import com.gaegxh.harvester.model.Task;
 import com.gaegxh.harvester.model.TicketSearchRequest;
 import com.gaegxh.harvester.model.TicketSolution;
 import com.gaegxh.harvester.service.export.Impl.CsvWriterService;
@@ -23,71 +24,95 @@ public class BatchTicketHarvester {
     private final SolutionParser solutionParser;
     private final CsvWriterService csvWriterService;
     private final Gson gson;
+    private final CriteriaFactory criteriaFactory;
+
 
     public BatchTicketHarvester(TicketApiClient apiClient, SolutionParser solutionParser,
-                                CsvWriterService csvWriterService) {
+                                CsvWriterService csvWriterService, Gson gson, CriteriaFactory criteriaFactory) {
         this.apiClient = apiClient;
         this.solutionParser = solutionParser;
         this.csvWriterService = csvWriterService;
-        this.gson = new Gson();
+        this.gson =gson;
+        this.criteriaFactory = criteriaFactory;
     }
 
-    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath) {
-        logger.info("Начало батч-операции с пошаговым перебором до полуночи");
 
-        String solutionsResponse = apiClient.fetchSolutions(initialRequest);
-        List<TicketSolution> allSolutions = new ArrayList<>(solutionParser.parseTickets(solutionsResponse));
+   public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath, Task task) {
+        logger.info("Начало батч-операции с постраничным смещением");
 
-        String cartId = extractCartId(solutionsResponse);
+        int offset = 10;
+        int limit = 10;
+        int maxAttempts = 100;
+
+        List<TicketSolution> allSolutions = new ArrayList<>();
+
+        String initialCartResponse = apiClient.fetchSolutions(initialRequest);
+        String cartId = extractCartId(initialCartResponse);
         if (cartId == null) {
-            logger.warn("cartId не найден. Батч-операция завершена на первом шаге.");
-            csvWriterService.writeTicketsToCsv(allSolutions, filepath);
+            logger.warn("cartId не найден. Батч-операция завершена.");
             return allSolutions;
         }
 
-        TicketSearchRequest currentRequest = createBatchRequest(initialRequest, cartId);
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            logger.info("Попытка {}: offset={}, limit={}", attempt + 1, offset, limit);
 
-        boolean continueFetching = true;
-        while (continueFetching) {
-            String response = apiClient.fetchSolutions(currentRequest);
-            List<TicketSolution> batchSolutions = solutionParser.parseTickets(response);
+            TicketSearchRequest paginatedRequest = TicketSearchRequest.builder()
+                    .cartId(cartId)
+                    .departureLocationId(initialRequest.getDepartureLocationId())
+                    .arrivalLocationId(initialRequest.getArrivalLocationId())
+                    .departureTime(initialRequest.getDepartureTime())
+                    .adults(initialRequest.getAdults())
+                    .children(initialRequest.getChildren())
+                    .criteria(criteriaFactory.create("DEPARTURE_DATE", offset, limit))
+                    .build();
+
+            String response;
+            try {
+                response = apiClient.fetchSolutions(paginatedRequest);
+                logger.debug("Ответ получен: {} символов", response.length());
+                System.out.println(response);
+            } catch (Exception e) {
+                logger.error("Ошибка при получении ответа от API: {}", e.getMessage());
+                break;
+            }
+
+            if (!containsSolutionsArray(response)) {
+                logger.info("Ответ не содержит массива solutions. Завершаем цикл.");
+                break;
+            }
+
+            List<TicketSolution> batchSolutions;
+            try {
+                batchSolutions = solutionParser.parseTickets(response,task);
+            } catch (Exception e) {
+                logger.warn("Ошибка при парсинге JSON: {}", e.getMessage());
+                break;
+            }
 
             if (batchSolutions.isEmpty()) {
-                logger.info("Нет новых решений. Останавливаем.");
+                logger.info("Получено пустое решение — завершение.");
                 break;
             }
 
             allSolutions.addAll(batchSolutions);
+            logger.info("Добавлено {} решений на этом шаге. Всего накоплено: {}", batchSolutions.size(), allSolutions.size());
 
-            if (isLastTrainBeforeMidnight(response)) {
-                String lastDepartureTime = extractLastDepartureTime(response);
-                if (lastDepartureTime == null) {
-                    logger.warn("Не удалось извлечь время последнего поезда. Завершаем.");
-                    break;
-                }
+            offset += limit;
 
-                logger.info("Следующий запрос с отправлением после {}", lastDepartureTime);
-
-                currentRequest = TicketSearchRequest.builder()
-                        .cartId(cartId)
-                        .departureLocationId(initialRequest.getDepartureLocationId())
-                        .arrivalLocationId(initialRequest.getArrivalLocationId())
-                        .departureTime(lastDepartureTime)
-                        .adults(initialRequest.getAdults())
-                        .children(initialRequest.getChildren())
-                        .criteria(initialRequest.getCriteria())
-                        .advancedSearchRequest(initialRequest.getAdvancedSearchRequest())
-                        .build();
-            } else {
-                logger.info("Последний поезд после полуночи. Завершаем.");
-                continueFetching = false;
+            if (batchSolutions.size() < limit) {
+                logger.info("Получено менее {} решений — больше страниц нет.", limit);
+                break;
             }
+
         }
 
-
-        logger.info("Батч-операция завершена, найдено {} решений", allSolutions.size());
+        logger.info("Батч-операция завершена. Всего решений: {}", allSolutions.size());
+        csvWriterService.writeTicketsToCsv(allSolutions, filepath);
         return allSolutions;
     }
+
+
+
 
     private String extractCartId(String response) {
         try {
@@ -104,56 +129,14 @@ public class BatchTicketHarvester {
         }
     }
 
-    private boolean isLastTrainBeforeMidnight(String response) {
+    private boolean containsSolutionsArray(String response) {
         try {
-            String lastDepartureTime = extractLastDepartureTime(response);
-            if (lastDepartureTime == null) {
-                return false;
-            }
-            OffsetDateTime time = OffsetDateTime.parse(lastDepartureTime);
-            return time.getHour() < 23 || (time.getHour() == 23 && time.getMinute() < 59);
+            JsonObject json = gson.fromJson(response, JsonObject.class);
+            return json.has("solutions") && json.get("solutions").isJsonArray();
         } catch (Exception e) {
-            logger.warn("Ошибка при определении времени последнего поезда: {}", e.getMessage());
+            logger.warn("Ошибка при проверке solutions: {}", e.getMessage());
             return false;
         }
     }
 
-    private String extractLastDepartureTime(String response) {
-        try {
-            JsonObject responseJson = gson.fromJson(response, JsonObject.class);
-            if (!responseJson.has("solutions")) {
-                return null;
-            }
-
-            JsonArray solutionsArray = responseJson.getAsJsonArray("solutions");
-            if (solutionsArray.size() == 0) {
-                return null;
-            }
-
-            JsonObject lastSolution = solutionsArray.get(solutionsArray.size() - 1).getAsJsonObject();
-            if (lastSolution.has("departureDateTime")) {
-                String departureTime = lastSolution.get("departureDateTime").getAsString();
-                logger.info("Последнее время отправления в ответе: {}", departureTime);
-                return departureTime;
-            }
-
-            return null;
-        } catch (Exception e) {
-            logger.warn("Ошибка при извлечении времени последнего поезда: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    private TicketSearchRequest createBatchRequest(TicketSearchRequest initialRequest, String cartId) {
-        return TicketSearchRequest.builder()
-                .cartId(cartId)
-                .departureLocationId(initialRequest.getDepartureLocationId())
-                .arrivalLocationId(initialRequest.getArrivalLocationId())
-                .departureTime(initialRequest.getDepartureTime())
-                .adults(initialRequest.getAdults())
-                .children(initialRequest.getChildren())
-                .criteria(initialRequest.getCriteria())
-                .advancedSearchRequest(initialRequest.getAdvancedSearchRequest())
-                .build();
-    }
 }
