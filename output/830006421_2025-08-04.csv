@@ -1,0 +1,37 @@
+Date,Departure,Arrival,Coach Class,Train Brand,Changes,Train Number,Departure Time,Duration,Price,Currency,Fare,Change Station
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18251,00:40,1h 23min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18253,04:30,1h 22min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18355,06:08,1h 24min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18263,06:53,1h 13min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4011,07:00,51min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,94489,07:10,1h 10min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional |FRECCIARGENTO,1 change,18745|8588,07:34,1h 14min,1.60,€,ORDINARIA,Firenze Campo Di Marte
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional |FRECCIARGENTO,1 change,18745|8588,07:34,1h 14min,20.50,€,BASE,Firenze Campo Di Marte
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional |FRECCIARGENTO,1 change,18745|8588,07:34,1h 14min,16.90,€,Economy,Firenze Campo Di Marte
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,1ST CLASS,Regional |FRECCIARGENTO,1 change,18745|8588,07:34,1h 14min,27.50,€,BASE,Firenze Campo Di Marte
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,1ST CLASS,Regional |FRECCIARGENTO,1 change,18745|8588,07:34,1h 14min,21.90,€,Economy,Firenze Campo Di Marte
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18357,07:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18277,08:05,1h 17min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional |Regional ,1 change,18203|18277,08:10,1h 12min,9.30,€,ORDINARIA,Empoli
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4017,08:28,1h 00min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18283,08:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18361,09:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18365,10:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18367,11:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18371,12:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4031,13:00,51min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18293,13:16,1h 29min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18373,13:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4035,14:28,1h 00min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18377,14:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18381,15:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4043,16:28,1h 00min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18387,16:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Fast Regional,direct,4045,17:00,51min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18311,17:53,1h 10min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18313,18:16,1h 28min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18389,18:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18319,19:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18329,20:53,1h 11min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18337,22:00,1h 22min,9.30,€,ORDINARIA,NULL
+2025-08-04,Firenze S. M. Novella,Pisa Centrale,2ND CLASS,Regional ,direct,18339,23:07,1h 22min,9.30,€,ORDINARIA,NULL
