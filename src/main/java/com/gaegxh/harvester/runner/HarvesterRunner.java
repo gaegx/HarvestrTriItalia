@@ -48,7 +48,7 @@ public class HarvesterRunner implements CommandLineRunner {
             trainHarvester.harvestSolutions(task);
         });
 
-        if (task.getResult().equals("1")) {
+        if (task.getReverse()==1) {
             executor.submit(() -> {
                 Task reversed = trainInverser.getInversedTask(task);
                 log.info("Обратная задача: {} -> {}", reversed.getDepartureStation(), reversed.getArrivalStation());
