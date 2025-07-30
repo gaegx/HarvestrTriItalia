@@ -78,9 +78,13 @@ public class TrainHarvester {
         long timestamp = System.currentTimeMillis()/1000;
         csvWriterService.writeTicketsToCsv(solutions, filepath);
         String md5Checksum = ticketRepository.sendShortDataInfo(filepath,timestamp,solutions.size(),initialResponse);
-        ticketRepository.getShortDataStatus(md5Checksum);
-        ticketRepository.sendHarvestResult(task.getTaskUuid(),"null",200);
-        ticketRepository.saveTickets(solutions,md5Checksum);
+        if (ticketRepository.getShortDataStatus(md5Checksum)) {
+         ticketRepository.sendHarvestResult(task.getTaskUuid(), "null", 200);
+         ticketRepository.saveTickets(solutions, md5Checksum);
+        } else {
+         throw new RuntimeException("Ticket short data status check failed for checksum: " + md5Checksum);
+        }
+
         logger.info("Итоговое количество решений: {}", solutions.size());
     }
 
