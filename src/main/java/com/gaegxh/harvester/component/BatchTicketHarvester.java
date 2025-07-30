@@ -32,7 +32,7 @@ public class BatchTicketHarvester {
         this.apiClient = apiClient;
         this.solutionParser = solutionParser;
         this.csvWriterService = csvWriterService;
-        this.gson = new Gson();
+        this.gson =gson;
         this.criteriaFactory = criteriaFactory;
     }
 

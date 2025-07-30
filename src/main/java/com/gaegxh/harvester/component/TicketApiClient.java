@@ -17,8 +17,7 @@ public class TicketApiClient {
 
     public String fetchSolutions(TicketSearchRequest request) {
         try {
-            String response = ticketSearchService.searchTickets(request);
-            return response;
+            return ticketSearchService.searchTickets(request);
         } catch (Exception e) {
             logger.error("Ошибка при выполнении запроса к API /ticket/solutions: {}", e.getMessage());
             throw new RuntimeException("Не удалось получить ответ от API /ticket/solutions", e);

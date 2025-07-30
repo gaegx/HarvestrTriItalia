@@ -1,6 +1,5 @@
 package com.gaegxh.harvester.service.search.Impl;
 
-import com.gaegxh.harvester.config.CookieConfig;
 import com.gaegxh.harvester.model.TicketSearchRequest;
 import com.gaegxh.harvester.service.search.SearchService;
 import kong.unirest.HttpResponse;
@@ -17,8 +16,6 @@ public class SearchServiceImpl implements SearchService {
 
 
 
-
-
     @Override
     public String searchTickets(TicketSearchRequest request) {
         try {
@@ -27,9 +24,6 @@ public class SearchServiceImpl implements SearchService {
                     .header("Content-Type", "application/json")
                     .body(request)
                     .asString();
-
-
-
 
             return response.getBody();
         } catch (UnirestException e) {

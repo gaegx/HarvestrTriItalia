@@ -13,20 +13,11 @@ public class TicketSearchRequestFactory {
     private static final int DEFAULT_LIMIT = 10;
 
 
-
-
-
     public TicketSearchRequest createInitialRequest(long departureStationId, long arrivalStationId,String date) {
         logger.info("Создание начального запроса");
 
         return createRequest(departureStationId, arrivalStationId, date, DEFAULT_LIMIT);
     }
-
-    public TicketSearchRequest createRequestWithTime(long departureStationId, long arrivalStationId, String departureTime) {
-        logger.info("Создание запроса с указанным временем отправления: {}", departureTime);
-        return createRequest(departureStationId, arrivalStationId, departureTime, DEFAULT_LIMIT);
-    }
-
 
     private TicketSearchRequest createRequest(long departureStationId, long arrivalStationId, String departureTime, int limit) {
         int adults =1;

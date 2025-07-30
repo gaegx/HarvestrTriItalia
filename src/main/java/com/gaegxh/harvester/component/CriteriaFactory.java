@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 public class CriteriaFactory {
     private static final Logger logger = LoggerFactory.getLogger(CriteriaFactory.class);
 
-
-
     public Criteria create(String order,int offset, int limit) {
         logger.info("Создание объекта Criteria с вводом пользователя");
         return Criteria.builder()

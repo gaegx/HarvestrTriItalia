@@ -47,20 +47,12 @@ public class Task {
     private String departureStationUuid;
 
     @SerializedName("arr_station_uuid")
+
     private String arrivalStationUuid;
 
-
     private String regionCode;
-
     private String status;
-
     private int priority;
-
-
     private String result;
-
-
-
-
     private int retryCount;
 }

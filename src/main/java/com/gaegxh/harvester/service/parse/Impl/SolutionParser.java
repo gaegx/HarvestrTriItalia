@@ -3,6 +3,7 @@ package com.gaegxh.harvester.service.parse.Impl;
 import com.gaegxh.harvester.model.TicketSolution;
 import com.gaegxh.harvester.model.Task;
 import com.gaegxh.harvester.service.filter.SolutionFilter;
+import com.gaegxh.harvester.service.parse.ParseService;
 import com.google.gson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.*;
 
 @Service
-public class SolutionParser {
+public class SolutionParser implements ParseService {
 
     private static final Logger log = LoggerFactory.getLogger(SolutionParser.class);
 
