@@ -47,7 +47,6 @@ public class CsvWriterService implements ExporterService {
     private static String toCsvLine(TicketSolution t) {
         String changeStations = nullToEmpty(t.getChangeStation());
 
-        // Подсчёт пересадок по символу '|'
         String changeType = "direct";
         if (!"NULL".equalsIgnoreCase(changeStations) && !changeStations.isBlank()) {
             int count = changeStations.split("\\|").length;

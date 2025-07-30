@@ -41,21 +41,14 @@ public class HarvesterRunner implements CommandLineRunner {
         Task task = taskOptional.get();
         log.info("Основная задача: {} -> {}", task.getDepartureStation(), task.getArrivalStation());
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
 
 
-        Future<?> mainTaskFuture = executor.submit(() -> {
+
             trainHarvester.harvestSolutions(task);
-        });
 
-        if (task.getReverse()==1) {
-            executor.submit(() -> {
-                Task reversed = trainInverser.getInversedTask(task);
-                log.info("Обратная задача: {} -> {}", reversed.getDepartureStation(), reversed.getArrivalStation());
-                trainHarvester.harvestSolutions(reversed);
-            });
-        }
 
-        executor.shutdown();
+
+
+
     }
 }

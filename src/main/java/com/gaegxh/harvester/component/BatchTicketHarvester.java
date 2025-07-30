@@ -99,8 +99,8 @@ public class BatchTicketHarvester {
 
             offset += limit;
 
-            if (batchSolutions.size() < limit) {
-                logger.info("Получено менее {} решений — больше страниц нет.", limit);
+            if (batchSolutions.size()==0) {
+                logger.info("Больше решений нет", limit);
                 break;
             }
 
