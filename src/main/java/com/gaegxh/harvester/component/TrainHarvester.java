@@ -77,8 +77,11 @@ public class TrainHarvester {
         solutions = new ArrayList<>(new LinkedHashSet<>(solutions));
         String input = solutions.size() + ":" + filepath;
         String md5Checksum = DigestUtils.md5Hex(input);
+        long timestamp = System.currentTimeMillis();
         csvWriterService.writeTicketsToCsv(solutions, filepath);
-        ticketRepository.sendHarvestResult(task.getTaskUuid(),md5Checksum,200);
+        ticketRepository.sendShortDataInfo(filepath,timestamp,solutions.size(),initialResponse);
+        ticketRepository.getShortDataStatus("md5Checksum");
+        ticketRepository.sendHarvestResult(task.getTaskUuid(),"null",200);
         ticketRepository.saveTickets(solutions,md5Checksum);
         logger.info("Итоговое количество решений: {}", solutions.size());
     }

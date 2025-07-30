@@ -38,21 +38,21 @@ public class TicketRepository {
                     :currency, :fare, :changeStation
                 )
             """)
-            .setParameter("md5", md5Checksum)
-            .setParameter("date", ticket.getDate())
-            .setParameter("from", ticket.getDeparture())
-            .setParameter("to", ticket.getArrival())
-            .setParameter("coach", ticket.getCoachClassName())
-            .setParameter("brand", ticket.getTrainBrand())
-            .setParameter("class", ticket.getTrainClass())
-            .setParameter("number", ticket.getTrainNumber())
-            .setParameter("departureTime", parseSafeInt(ticket.getDepartureTime()))
-            .setParameter("duration", parseSafeInt(ticket.getDuration()))
-            .setParameter("price", parseSafeDouble(ticket.getPrice()))
-            .setParameter("currency", ticket.getCurrency())
-            .setParameter("fare", ticket.getFare())
-            .setParameter("changeStation", ticket.getChangeStation())
-            .executeUpdate();
+                    .setParameter("md5", md5Checksum)
+                    .setParameter("date", ticket.getDate())
+                    .setParameter("from", ticket.getDeparture())
+                    .setParameter("to", ticket.getArrival())
+                    .setParameter("coach", ticket.getCoachClassName())
+                    .setParameter("brand", ticket.getTrainBrand())
+                    .setParameter("class", ticket.getTrainClass())
+                    .setParameter("number", ticket.getTrainNumber())
+                    .setParameter("departureTime", parseSafeInt(ticket.getDepartureTime()))
+                    .setParameter("duration", parseSafeInt(ticket.getDuration()))
+                    .setParameter("price", parseSafeDouble(ticket.getPrice()))
+                    .setParameter("currency", ticket.getCurrency())
+                    .setParameter("fare", ticket.getFare())
+                    .setParameter("changeStation", ticket.getChangeStation())
+                    .executeUpdate();
 
             if (++count % batchSize == 0) {
                 entityManager.flush();
@@ -99,4 +99,54 @@ public class TicketRepository {
             throw e;
         }
     }
+
+    @Transactional
+    public boolean getShortDataStatus(String md5) {
+        try {
+            Query query = entityManager.createNativeQuery("CALL get_slice_status(:md5)");
+            query.setParameter("md5", md5);
+            List<?> result = query.getResultList();
+
+            if (!result.isEmpty()) {
+                Object value = result.get(0);
+                if (value instanceof Number number) {
+                    return number.intValue() == 1;
+                } else {
+
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return false;
+    }
+    @Transactional
+    public String sendShortDataInfo(String fileName, long timestamp, int ticketCount, String jsonConfig) {
+        String md5Checksum = org.apache.commons.codec.digest.DigestUtils
+                .md5Hex(timestamp + ticketCount + fileName);
+
+        try {
+            entityManager.createNativeQuery("""
+            INSERT INTO tcs__slice_list (
+                file_md5checksum, file_date, file_size, file_name, json_configuration
+            )
+            VALUES (
+                :md5, :date, :size, :name, :config
+            )
+        """)
+                    .setParameter("md5", md5Checksum)
+                    .setParameter("date", timestamp)
+                    .setParameter("size", ticketCount)
+                    .setParameter("name", fileName)
+                    .setParameter("config", jsonConfig)
+                    .executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to insert short data info", e);
+        }
+
+        return md5Checksum;
+    }
+
 }
