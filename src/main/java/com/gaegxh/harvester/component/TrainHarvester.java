@@ -45,7 +45,7 @@ public class TrainHarvester {
 
     }
 
-    public void harvestSolutions(Task task){
+ public void harvestSolutions(Task task){
         TicketSearchRequest initialRequest = requestFactory.createInitialRequest(
                 Long.parseLong(task.getDepartureStation()),
                 Long.parseLong(task.getArrivalStation()),

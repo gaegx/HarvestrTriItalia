@@ -36,7 +36,8 @@ public class BatchTicketHarvester {
         this.criteriaFactory = criteriaFactory;
     }
 
-    public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath, Task task) {
+
+   public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath, Task task) {
         logger.info("Начало батч-операции с постраничным смещением");
 
         int offset = 10;
