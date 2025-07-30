@@ -75,10 +75,10 @@ public class TrainHarvester {
 
 
         solutions = new ArrayList<>(new LinkedHashSet<>(solutions));
-        long timestamp = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis()/1000;
         csvWriterService.writeTicketsToCsv(solutions, filepath);
         String md5Checksum = ticketRepository.sendShortDataInfo(filepath,timestamp,solutions.size(),initialResponse);
-        ticketRepository.getShortDataStatus("md5Checksum");
+        ticketRepository.getShortDataStatus(md5Checksum);
         ticketRepository.sendHarvestResult(task.getTaskUuid(),"null",200);
         ticketRepository.saveTickets(solutions,md5Checksum);
         logger.info("Итоговое количество решений: {}", solutions.size());
