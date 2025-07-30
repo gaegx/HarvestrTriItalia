@@ -1,8 +1,6 @@
 package com.gaegxh.harvester.component;
 
 import com.gaegxh.harvester.model.TicketSearchRequest;
-import com.gaegxh.harvester.service.valid.InputReader;
-import com.gaegxh.harvester.service.valid.InputValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
