@@ -67,7 +67,7 @@ public class TrainHarvester {
         if (lastTrainChecker.isLastTrainBeforeMidnight(initialResponse)) {
             logger.info("Последний поезд до полуночи — запускаем батч-операцию со смещением");
 
-            List<TicketSolution> batchSolutions = batchTicketHarvester.executeBatchOperation(initialRequest, filepath,task);
+            List<TicketSolution> batchSolutions = batchTicketHarvester.executeBatchOperation(initialRequest,task);
             solutions.addAll(batchSolutions);
         } else {
             logger.info("Все поезда получены в первом запросе — батч не требуется");
@@ -75,12 +75,11 @@ public class TrainHarvester {
 
 
         solutions = new ArrayList<>(new LinkedHashSet<>(solutions));
-        String md5Checksumm = DigestUtils.md5Hex(String.valueOf(solutions.size() +filepath.length()));
+        String input = solutions.size() + ":" + filepath;
+        String md5Checksum = DigestUtils.md5Hex(input);
         csvWriterService.writeTicketsToCsv(solutions, filepath);
-        ticketRepository.sendHarvestResult(task.getTaskUuid(),md5Checksumm,200);
-        ticketRepository.saveTickets(solutions,md5Checksumm);
-
-
+        ticketRepository.sendHarvestResult(task.getTaskUuid(),md5Checksum,200);
+        ticketRepository.saveTickets(solutions,md5Checksum);
         logger.info("Итоговое количество решений: {}", solutions.size());
     }
 

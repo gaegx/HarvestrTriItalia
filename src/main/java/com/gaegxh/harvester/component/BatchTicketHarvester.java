@@ -37,7 +37,7 @@ public class BatchTicketHarvester {
     }
 
 
-   public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, String filepath, Task task) {
+   public List<TicketSolution> executeBatchOperation(TicketSearchRequest initialRequest, Task task) {
         logger.info("Начало батч-операции с постраничным смещением");
 
         int offset = 10;
@@ -107,7 +107,6 @@ public class BatchTicketHarvester {
         }
 
         logger.info("Батч-операция завершена. Всего решений: {}", allSolutions.size());
-        csvWriterService.writeTicketsToCsv(allSolutions, filepath);
         return allSolutions;
     }
 
