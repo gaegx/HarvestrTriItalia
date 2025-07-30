@@ -1,6 +1,6 @@
 package com.gaegxh.harvester.model;
 
-import jakarta.persistence.*;
+
 import lombok.*;
 
 
@@ -8,53 +8,51 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Entity
-@Table(name = "ticket")
+
 public class TicketSolution {
 
     private static final String WRITE_SEPARATOR = "   ";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
-    @Column(name = "departure_date", nullable = false)
+
     private String date;
 
-    @Column(name = "departure_code", nullable = false)
+
     private String departure;
 
-    @Column(name = "arrival_code", nullable = false)
+
     private String arrival;
 
-    @Column(name = "coach_class")
+
     private String coachClassName;
 
-    @Column(name = "train_brand")
+
     private String trainBrand;
 
-    @Column(name = "train_class")
+
     private String trainClass;
 
-    @Column(name = "train_number")
+
     private String trainNumber;
 
-    @Column(name = "departure_time")
+
     private String departureTime;
 
-    @Column(name = "duration")
+
     private String duration;
 
-    @Column(name = "price")
+
     private String price;
 
-    @Column(name = "currency")
+
     private String currency;
 
-    @Column(name = "fare_code")
+
     private String fare;
 
-    @Column(name = "change_stations")
+
     private String changeStation;
 
 

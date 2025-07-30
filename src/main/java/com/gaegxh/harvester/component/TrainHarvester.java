@@ -3,8 +3,10 @@ package com.gaegxh.harvester.component;
 import com.gaegxh.harvester.model.Task;
 import com.gaegxh.harvester.model.TicketSearchRequest;
 import com.gaegxh.harvester.model.TicketSolution;
+import com.gaegxh.harvester.repository.ticket.TicketRepository;
 import com.gaegxh.harvester.service.export.Impl.CsvWriterService;
 import com.gaegxh.harvester.service.parse.Impl.SolutionParser;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,12 +26,14 @@ public class TrainHarvester {
     private final LastTrainChecker lastTrainChecker;
     private final TicketSearchRequestFactory requestFactory;
     private final BatchTicketHarvester batchTicketHarvester;
+    private final TicketRepository ticketRepository;
 
 
 
     public TrainHarvester(TicketApiClient apiClient,
                           SolutionParser solutionParser, CsvWriterService csvWriterService,
                           LastTrainChecker lastTrainChecker, TicketSearchRequestFactory requestFactory, BatchTicketHarvester batchTicketHarvester,
+                          TicketRepository ticketRepository
                           ) {
         this.apiClient = apiClient;
         this.solutionParser = solutionParser;
@@ -37,6 +41,7 @@ public class TrainHarvester {
         this.lastTrainChecker = lastTrainChecker;
         this.requestFactory = requestFactory;
         this.batchTicketHarvester = batchTicketHarvester;
+        this.ticketRepository = ticketRepository;
 
     }
 
@@ -70,8 +75,10 @@ public class TrainHarvester {
 
 
         solutions = new ArrayList<>(new LinkedHashSet<>(solutions));
-
+        String md5Checksumm = DigestUtils.md5Hex(String.valueOf(solutions.size() +filepath.length()));
         csvWriterService.writeTicketsToCsv(solutions, filepath);
+        ticketRepository.sendHarvestResult(task.getTaskUuid(),md5Checksumm,200);
+        ticketRepository.saveTickets(solutions,md5Checksumm);
 
 
         logger.info("Итоговое количество решений: {}", solutions.size());

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TaskInverser {
 
-    public static Task getInversedTask(Task task) {
+    public  Task getInversedTask(Task task) {
         Task reversedTask = new Task();
         reversedTask.setTaskUuid(task.getTaskUuid());
         reversedTask.setCrawlerType(task.getCrawlerType());
