@@ -1,10 +1,13 @@
 package com.gaegxh.harvester.service.parse.Impl;
 
 import com.gaegxh.harvester.model.TicketSolution;
+import com.gaegxh.harvester.model.Task;
+import com.gaegxh.harvester.service.filter.SolutionFilter;
 import com.google.gson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -13,7 +16,14 @@ public class SolutionParser {
 
     private static final Logger log = LoggerFactory.getLogger(SolutionParser.class);
 
-    public  List<TicketSolution>    parseTickets(String jsonResponse) {
+    private final List<SolutionFilter> filters;
+
+    @Autowired
+    public SolutionParser(List<SolutionFilter> filters) {
+        this.filters = filters != null ? filters : Collections.emptyList();
+    }
+
+    public List<TicketSolution> parseTickets(String jsonResponse, Task task) {
         log.info("Начинается парсинг JSON-ответа");
         List<TicketSolution> tickets = new ArrayList<>();
 
@@ -24,9 +34,8 @@ public class SolutionParser {
         }
 
         JsonArray solutions = getJsonArray(root, "solutions");
-        if (solutions == null) {
-            log.warn("В JSON отсутствует массив 'solutions'");
-            return tickets;
+        if (solutions == null || solutions.isEmpty()) {
+            throw new NoSuchElementException("Массив 'solutions' отсутствует или пуст");
         }
         log.info("Количество решений для парсинга: {}", solutions.size());
 
@@ -43,11 +52,27 @@ public class SolutionParser {
                 continue;
             }
 
-            tickets.addAll(parseSingleSolution(solutionWrapper, solution, i));
+            List<TicketSolution> parsedSolutions = parseSingleSolution(solutionWrapper, solution, i);
+            for (TicketSolution ticket : parsedSolutions) {
+                if (passesFilters(ticket, task)) {
+                    tickets.add(ticket);
+                } else {
+                    log.debug("Билет отфильтрован: {}", ticket);
+                }
+            }
         }
 
-        log.info("Парсинг завершён, всего найдено билетов: {}", tickets.size());
+        log.info("Парсинг завершён, всего найдено билетов после фильтрации: {}", tickets.size());
         return tickets;
+    }
+
+    private boolean passesFilters(TicketSolution ticket, Task task) {
+        for (SolutionFilter filter : filters) {
+            if (!filter.filter(ticket, task)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static List<TicketSolution> parseSingleSolution(JsonObject solutionWrapper, JsonObject solution, int index) {
@@ -168,7 +193,6 @@ public class SolutionParser {
 
         return tickets;
     }
-
 
     private static String getString(JsonObject obj, String key) {
         if (obj != null && obj.has(key) && !obj.get(key).isJsonNull()) {
